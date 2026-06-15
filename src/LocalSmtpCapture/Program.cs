@@ -1,5 +1,6 @@
 using LocalSmtpCapture.Configuration;
 using LocalSmtpCapture.Hosting;
+using LocalSmtpCapture.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -54,6 +55,8 @@ public static class Program
             .ValidateOnStart();
 
         builder.Services.AddHostedService<StartupLoggingService>();
+        builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddSingleton<IMessageFolderNameGenerator, MessageFolderNameGenerator>();
 
         return builder;
     }

@@ -50,6 +50,8 @@ dotnet run --project src\LocalSmtpCapture\LocalSmtpCapture.csproj --no-build
 
 Startup should log SMTP host, SMTP port, authentication enabled state, email output folder, and configuration sources.
 
+When using PowerShell `Start-Process` for startup smoke checks, do not pass the same file to `-RedirectStandardOutput` and `-RedirectStandardError`; PowerShell fails before starting the process. Use separate stdout and stderr log files instead.
+
 The sandbox may deny access to user-level NuGet config files. If build or test fails with access denied for `C:\Users\MONTEITH\AppData\Roaming\NuGet\NuGet.Config`, rerun the same `dotnet build` or `dotnet test` command with escalated permissions.
 
 ## Coding Notes
