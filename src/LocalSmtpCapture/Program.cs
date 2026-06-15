@@ -57,6 +57,7 @@ public static class Program
         builder.Services.AddHostedService<StartupLoggingService>();
         builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddSingleton<IMessageFolderNameGenerator, MessageFolderNameGenerator>();
+        builder.Services.AddSingleton<IEmailMessagePersistenceService, EmailMessagePersistenceService>();
 
         return builder;
     }
