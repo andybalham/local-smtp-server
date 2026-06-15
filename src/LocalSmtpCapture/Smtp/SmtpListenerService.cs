@@ -73,25 +73,32 @@ public sealed class SmtpListenerService(
         server.Shutdown();
         listenerCancellation?.Cancel();
 
-        if (serverTask is not null)
+        try
         {
-            try
+            if (serverTask is not null)
             {
-                await serverTask.WaitAsync(cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await serverTask.WaitAsync(cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (OperationCanceledException)
+                {
+                }
             }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                throw;
-            }
-            catch (OperationCanceledException)
-            {
-            }
-        }
 
-        listenerCancellation?.Dispose();
-        listenerCancellation = null;
-        server = null;
-        serverTask = null;
+            logger.LogInformation("SMTP listener stopped.");
+        }
+        finally
+        {
+            listenerCancellation?.Dispose();
+            listenerCancellation = null;
+            server = null;
+            serverTask = null;
+        }
     }
 
     private static IPEndPoint CreateEndpoint(string host, int port)

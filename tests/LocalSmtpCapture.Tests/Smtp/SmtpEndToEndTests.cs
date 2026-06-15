@@ -67,6 +67,20 @@ public sealed class SmtpEndToEndTests
         Assert.Equal("Attachment content", await File.ReadAllTextAsync(attachmentPath));
     }
 
+    [Fact]
+    public async Task StopAsync_RunningSmtpServer_StopsAcceptingConnections()
+    {
+        using TemporaryFolder temporaryFolder = new();
+        int port = GetAvailablePort();
+        using IHost host = await StartHostAsync(port, temporaryFolder.Path);
+
+        await AssertConnectionAcceptedAsync(port);
+
+        await host.StopAsync();
+
+        await AssertConnectionRejectedAsync(port);
+    }
+
     private static async Task<IHost> StartHostAsync(int port, string outputFolder)
     {
         HostApplicationBuilder builder = Program.CreateBuilder([]);
@@ -88,6 +102,41 @@ public sealed class SmtpEndToEndTests
         };
 
         await client.SendMailAsync(message).WaitAsync(TimeSpan.FromSeconds(10));
+    }
+
+    private static async Task AssertConnectionAcceptedAsync(int port)
+    {
+        using TcpClient client = new();
+
+        await client.ConnectAsync(IPAddress.Loopback, port).WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.True(client.Connected);
+    }
+
+    private static async Task AssertConnectionRejectedAsync(int port)
+    {
+        DateTimeOffset deadline = DateTimeOffset.UtcNow.AddSeconds(10);
+
+        while (DateTimeOffset.UtcNow < deadline)
+        {
+            try
+            {
+                using TcpClient client = new();
+                await client.ConnectAsync(IPAddress.Loopback, port).WaitAsync(TimeSpan.FromMilliseconds(250));
+            }
+            catch (SocketException)
+            {
+                return;
+            }
+            catch (TimeoutException)
+            {
+                return;
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(50));
+        }
+
+        throw new TimeoutException("SMTP listener continued accepting connections after host shutdown.");
     }
 
     private static int GetAvailablePort()
