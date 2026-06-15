@@ -1,4 +1,5 @@
 using LocalSmtpCapture.Configuration;
+using LocalSmtpCapture.Console;
 using LocalSmtpCapture.Hosting;
 using LocalSmtpCapture.Storage;
 using Microsoft.Extensions.Configuration;
@@ -56,6 +57,7 @@ public static class Program
 
         builder.Services.AddHostedService<StartupLoggingService>();
         builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddSingleton<IEmailSummaryFormatter, EmailSummaryFormatter>();
         builder.Services.AddSingleton<IMessageFolderNameGenerator, MessageFolderNameGenerator>();
         builder.Services.AddSingleton<IEmailMessagePersistenceService, EmailMessagePersistenceService>();
 
