@@ -27,7 +27,7 @@ public sealed class EmailMessagePersistenceService(
         string outputFolder = options.Value.Storage.OutputFolder;
         Directory.CreateDirectory(outputFolder);
 
-        string messageFolderPath = CreateUniqueMessageFolder(outputFolder);
+        string messageFolderPath = CreateUniqueMessageFolder(outputFolder, message);
         string rawMessagePath = Path.Combine(messageFolderPath, RawMessageFileName);
 
         await using (FileStream rawMessageStream = File.Create(rawMessagePath))
@@ -62,11 +62,11 @@ public sealed class EmailMessagePersistenceService(
             attachmentPaths);
     }
 
-    private string CreateUniqueMessageFolder(string outputFolder)
+    private string CreateUniqueMessageFolder(string outputFolder, MimeMessage message)
     {
         for (int attempt = 0; attempt < 10; attempt++)
         {
-            string messageFolderPath = Path.Combine(outputFolder, folderNameGenerator.GenerateFolderName());
+            string messageFolderPath = Path.Combine(outputFolder, folderNameGenerator.GenerateFolderName(message));
 
             if (Directory.Exists(messageFolderPath))
             {

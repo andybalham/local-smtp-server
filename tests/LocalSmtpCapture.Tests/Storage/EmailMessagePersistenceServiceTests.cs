@@ -138,7 +138,7 @@ public sealed class EmailMessagePersistenceServiceTests
     {
         private int nextId;
 
-        public string GenerateFolderName()
+        public string GenerateFolderName(MimeMessage message)
         {
             nextId++;
             return $"message-{nextId}";
