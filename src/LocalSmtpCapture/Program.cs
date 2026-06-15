@@ -1,10 +1,13 @@
 using LocalSmtpCapture.Configuration;
 using LocalSmtpCapture.Console;
 using LocalSmtpCapture.Hosting;
+using LocalSmtpCapture.Smtp;
 using LocalSmtpCapture.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SmtpServer.Authentication;
+using SmtpServer.Storage;
 
 /// <summary>
 /// Application entry point and host composition root.
@@ -56,10 +59,13 @@ public static class Program
             .ValidateOnStart();
 
         builder.Services.AddHostedService<StartupLoggingService>();
+        builder.Services.AddHostedService<SmtpListenerService>();
         builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddSingleton<IEmailSummaryFormatter, EmailSummaryFormatter>();
         builder.Services.AddSingleton<IMessageFolderNameGenerator, MessageFolderNameGenerator>();
         builder.Services.AddSingleton<IEmailMessagePersistenceService, EmailMessagePersistenceService>();
+        builder.Services.AddSingleton<IUserAuthenticator, SmtpAuthenticationValidator>();
+        builder.Services.AddSingleton<IMessageStore, SmtpMessageStore>();
 
         return builder;
     }
