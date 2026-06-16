@@ -12,6 +12,9 @@ namespace LocalSmtpCapture.Console;
 /// <param name="options">The configured application options.</param>
 public sealed class EmailSummaryFormatter(IOptions<LocalSmtpCaptureOptions> options) : IEmailSummaryFormatter
 {
+    private const string StartDelimiter = "========== Captured email ==========";
+    private const string EndDelimiter = "======== End captured email ========";
+
     /// <inheritdoc />
     public string Format(MimeMessage message, PersistedMessage persistedMessage, DateTimeOffset receivedAt)
     {
@@ -26,6 +29,7 @@ public sealed class EmailSummaryFormatter(IOptions<LocalSmtpCaptureOptions> opti
             .ToArray();
 
         StringBuilder summary = new();
+        summary.AppendLine(StartDelimiter);
         summary.AppendLine($"Received email {receivedAt:yyyy-MM-dd HH:mm:ss zzz}");
         summary.AppendLine($"From: {FormatAddresses(message.From)}");
         summary.AppendLine($"Recipient count: {recipients.Count}");
@@ -39,7 +43,8 @@ public sealed class EmailSummaryFormatter(IOptions<LocalSmtpCaptureOptions> opti
         summary.AppendLine(
             $"Bodies: text={FormatBoolean(persistedMessage.TextBodyPath is not null)} html={FormatBoolean(persistedMessage.HtmlBodyPath is not null)}");
         summary.AppendLine($"Attachments: {attachmentNames.Count}{FormatAttachmentNames(attachmentNames)}");
-        summary.Append($"Saved: {persistedMessage.MessageFolderPath}");
+        summary.AppendLine($"Saved: {persistedMessage.MessageFolderPath}");
+        summary.Append(EndDelimiter);
 
         return summary.ToString();
     }

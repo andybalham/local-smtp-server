@@ -23,6 +23,7 @@ public sealed class EmailSummaryFormatterTests
 
         string summary = formatter.Format(message, persistedMessage, new DateTimeOffset(2026, 6, 15, 10, 30, 0, TimeSpan.FromHours(1)));
 
+        Assert.StartsWith("========== Captured email ==========", summary);
         Assert.Contains("Received email 2026-06-15 10:30:00 +01:00", summary);
         Assert.Contains("From: sender@example.com", summary);
         Assert.Contains("Recipient count: 3", summary);
@@ -31,6 +32,7 @@ public sealed class EmailSummaryFormatterTests
         Assert.Contains("Bodies: text=yes html=yes", summary);
         Assert.Contains("Attachments: 1 (invoice.pdf)", summary);
         Assert.Contains(@"Saved: C:\emails\20260615-103000-abc123", summary);
+        Assert.EndsWith("======== End captured email ========", summary);
     }
 
     [Fact]

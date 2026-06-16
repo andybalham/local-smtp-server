@@ -90,7 +90,7 @@ Only folders that contain `message.eml` are considered captured message folders.
 
 ## Console Summary
 
-For each captured email, the console logs metadata such as the received timestamp, sender, recipient count, recipients when enabled, subject, body availability, attachment names, and saved folder path. Message body content and attachment contents are not printed.
+For each captured email, the console logs a labeled delimiter and metadata such as the received timestamp, sender, recipient count, recipients when enabled, subject, body availability, attachment names, and saved folder path. Message body content and attachment contents are not printed.
 
 ## Validation
 
