@@ -18,6 +18,8 @@ public sealed class ProgramTests
         Assert.Equal("127.0.0.1", options.Smtp.Host);
         Assert.Equal(2525, options.Smtp.Port);
         Assert.Equal("./emails", options.Storage.OutputFolder);
+        Assert.True(options.Storage.Retention.PruneCapturedMessages);
+        Assert.Equal(30, options.Storage.Retention.MaxMessages);
         Assert.True(options.Smtp.Authentication.Enabled);
     }
 

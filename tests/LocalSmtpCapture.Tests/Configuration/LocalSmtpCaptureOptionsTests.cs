@@ -25,8 +25,8 @@ public sealed class LocalSmtpCaptureOptionsTests
         Assert.Equal("local", options.Smtp.Authentication.Password);
         Assert.Equal("./emails", options.Storage.OutputFolder);
         Assert.Null(options.Storage.FolderNamePattern);
-        Assert.False(options.Storage.Retention.PruneCapturedMessages);
-        Assert.Null(options.Storage.Retention.MaxMessages);
+        Assert.True(options.Storage.Retention.PruneCapturedMessages);
+        Assert.Equal(30, options.Storage.Retention.MaxMessages);
         Assert.True(options.Console.IncludeRecipients);
     }
 
@@ -81,6 +81,7 @@ public sealed class LocalSmtpCaptureOptionsTests
     {
         LocalSmtpCaptureOptions options = CreateValidOptions();
         options.Storage.Retention.PruneCapturedMessages = true;
+        options.Storage.Retention.MaxMessages = null;
 
         ConfigurationValidationException exception = Assert.Throws<ConfigurationValidationException>(
             () => LocalSmtpCaptureOptionsValidator.ValidateAndThrow(options));

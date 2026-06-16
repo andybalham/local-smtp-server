@@ -25,6 +25,10 @@ public sealed class StartupLoggingService(
         logger.LogInformation("SMTP port: {SmtpPort}", value.Smtp.Port);
         logger.LogInformation("SMTP authentication enabled: {AuthenticationEnabled}", value.Smtp.Authentication.Enabled);
         logger.LogInformation("Email output folder: {OutputFolder}", value.Storage.OutputFolder);
+        logger.LogInformation(
+            "Captured message pruning enabled: {PruneCapturedMessages}",
+            value.Storage.Retention.PruneCapturedMessages);
+        logger.LogInformation("Captured message retention limit: {MaxMessages}", value.Storage.Retention.MaxMessages);
         logger.LogInformation("Configuration sources: appsettings.json, environment variables.");
 
         return Task.CompletedTask;
