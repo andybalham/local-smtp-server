@@ -22,6 +22,7 @@ public static class LocalSmtpCaptureOptionsValidator
         ValidateObject(options.Smtp, "Smtp", errors);
         ValidateObject(options.Smtp.Authentication, "Smtp:Authentication", errors);
         ValidateObject(options.Storage, "Storage", errors);
+        ValidateObject(options.Storage.Retention, "Storage:Retention", errors);
         ValidateObject(options.Console, "Console", errors);
 
         if (string.IsNullOrWhiteSpace(options.Smtp.Host))
@@ -38,6 +39,12 @@ public static class LocalSmtpCaptureOptionsValidator
             && string.IsNullOrWhiteSpace(options.Storage.FolderNamePattern))
         {
             errors.Add("Storage:FolderNamePattern must not be whitespace.");
+        }
+
+        if (options.Storage.Retention.PruneCapturedMessages
+            && options.Storage.Retention.MaxMessages is null)
+        {
+            errors.Add("Storage:Retention:MaxMessages is required when captured message pruning is enabled.");
         }
 
         if (options.Smtp.Authentication.Enabled)

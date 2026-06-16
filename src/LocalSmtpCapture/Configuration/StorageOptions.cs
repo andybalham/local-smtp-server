@@ -17,4 +17,9 @@ public sealed class StorageOptions
     /// Gets or sets the optional message folder naming pattern.
     /// </summary>
     public string? FolderNamePattern { get; set; }
+
+    /// <summary>
+    /// Gets or sets retention settings for captured email folders.
+    /// </summary>
+    public RetentionOptions Retention { get; set; } = new();
 }

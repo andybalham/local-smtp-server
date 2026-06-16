@@ -25,6 +25,8 @@ public sealed class LocalSmtpCaptureOptionsTests
         Assert.Equal("local", options.Smtp.Authentication.Password);
         Assert.Equal("./emails", options.Storage.OutputFolder);
         Assert.Null(options.Storage.FolderNamePattern);
+        Assert.False(options.Storage.Retention.PruneCapturedMessages);
+        Assert.Null(options.Storage.Retention.MaxMessages);
         Assert.True(options.Console.IncludeRecipients);
     }
 
@@ -58,6 +60,46 @@ public sealed class LocalSmtpCaptureOptionsTests
         Assert.Contains("Storage:OutputFolder must not be empty.", exception.Errors);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void ValidateAndThrow_InvalidRetentionMaxMessages_ThrowsConfigurationValidationException(int maxMessages)
+    {
+        LocalSmtpCaptureOptions options = CreateValidOptions();
+        options.Storage.Retention.PruneCapturedMessages = true;
+        options.Storage.Retention.MaxMessages = maxMessages;
+
+        ConfigurationValidationException exception = Assert.Throws<ConfigurationValidationException>(
+            () => LocalSmtpCaptureOptionsValidator.ValidateAndThrow(options));
+
+        Assert.Contains(exception.Errors, error => error.Contains("Storage:Retention", StringComparison.Ordinal));
+        Assert.Contains(exception.Errors, error => error.Contains("MaxMessages", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void ValidateAndThrow_PruneCapturedMessagesWithoutLimit_ThrowsConfigurationValidationException()
+    {
+        LocalSmtpCaptureOptions options = CreateValidOptions();
+        options.Storage.Retention.PruneCapturedMessages = true;
+
+        ConfigurationValidationException exception = Assert.Throws<ConfigurationValidationException>(
+            () => LocalSmtpCaptureOptionsValidator.ValidateAndThrow(options));
+
+        Assert.Contains(
+            "Storage:Retention:MaxMessages is required when captured message pruning is enabled.",
+            exception.Errors);
+    }
+
+    [Fact]
+    public void ValidateAndThrow_PruneCapturedMessagesWithMaxMessages_DoesNotThrow()
+    {
+        LocalSmtpCaptureOptions options = CreateValidOptions();
+        options.Storage.Retention.PruneCapturedMessages = true;
+        options.Storage.Retention.MaxMessages = 100;
+
+        LocalSmtpCaptureOptionsValidator.ValidateAndThrow(options);
+    }
+
     private static LocalSmtpCaptureOptions CreateValidOptions()
     {
         return new LocalSmtpCaptureOptions
@@ -75,7 +117,8 @@ public sealed class LocalSmtpCaptureOptionsTests
             },
             Storage = new StorageOptions
             {
-                OutputFolder = "./emails"
+                OutputFolder = "./emails",
+                Retention = new RetentionOptions()
             },
             Console = new ConsoleOptions
             {
