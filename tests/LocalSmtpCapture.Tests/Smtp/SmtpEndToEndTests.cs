@@ -68,6 +68,39 @@ public sealed class SmtpEndToEndTests
     }
 
     [Fact]
+    public async Task SmtpServer_RetentionEnabled_PrunesAfterSuccessfulMessagePersistence()
+    {
+        using TemporaryFolder temporaryFolder = new();
+        int port = GetAvailablePort();
+        using IHost host = await StartHostAsync(
+            port,
+            temporaryFolder.Path,
+            pruneCapturedMessages: true,
+            maxMessages: 1);
+
+        using MailMessage firstMessage = new(
+            from: "sender@example.com",
+            to: "recipient@example.com",
+            subject: "First SMTP test",
+            body: "First body from SMTP.");
+        using MailMessage secondMessage = new(
+            from: "sender@example.com",
+            to: "recipient@example.com",
+            subject: "Second SMTP test",
+            body: "Second body from SMTP.");
+
+        await SendAsync(port, firstMessage);
+        await SendAsync(port, secondMessage);
+
+        string messageFolderPath = GetSingleMessageFolder(temporaryFolder.Path);
+        string rawMessagePath = Path.Combine(messageFolderPath, "message.eml");
+        string textBodyPath = Path.Combine(messageFolderPath, "body.txt");
+
+        Assert.True(File.Exists(rawMessagePath));
+        Assert.True(File.Exists(textBodyPath));
+    }
+
+    [Fact]
     public async Task StopAsync_RunningSmtpServer_StopsAcceptingConnections()
     {
         using TemporaryFolder temporaryFolder = new();
@@ -81,11 +114,21 @@ public sealed class SmtpEndToEndTests
         await AssertConnectionRejectedAsync(port);
     }
 
-    private static async Task<IHost> StartHostAsync(int port, string outputFolder)
+    private static async Task<IHost> StartHostAsync(
+        int port,
+        string outputFolder,
+        bool pruneCapturedMessages = false,
+        int? maxMessages = null)
     {
         HostApplicationBuilder builder = Program.CreateBuilder([]);
         builder.Configuration["Smtp:Port"] = port.ToString(CultureInfo.InvariantCulture);
         builder.Configuration["Storage:OutputFolder"] = outputFolder;
+        builder.Configuration["Storage:Retention:PruneCapturedMessages"] = pruneCapturedMessages.ToString(CultureInfo.InvariantCulture);
+
+        if (maxMessages is not null)
+        {
+            builder.Configuration["Storage:Retention:MaxMessages"] = maxMessages.Value.ToString(CultureInfo.InvariantCulture);
+        }
 
         IHost host = builder.Build();
         await host.StartAsync();
