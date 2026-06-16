@@ -29,6 +29,8 @@ Defaults are stored in `src/LocalSmtpCapture/appsettings.json` and can be overri
 | `Smtp:Authentication:Username` | `local` |
 | `Smtp:Authentication:Password` | `local` |
 | `Storage:OutputFolder` | `./emails` |
+| `Storage:Retention:PruneCapturedMessages` | `true` |
+| `Storage:Retention:MaxMessages` | `30` |
 | `Console:IncludeRecipients` | `true` |
 
 Example PowerShell override:
@@ -36,6 +38,7 @@ Example PowerShell override:
 ```powershell
 $env:Smtp__Port = "2526"
 $env:Storage__OutputFolder = "C:\tmp\captured-email"
+$env:Storage__Retention__MaxMessages = "100"
 dotnet run --project src\LocalSmtpCapture\LocalSmtpCapture.csproj
 ```
 
@@ -79,6 +82,12 @@ emails/
 
 `message.eml` is always written. `body.txt`, `body.html`, and `attachments/` are written when the message contains matching content.
 
+## Retention
+
+Captured message pruning is enabled by default. After each successfully persisted message, LocalSmtpCapture keeps the newest `Storage:Retention:MaxMessages` captured message folders and removes older captured message folders from `Storage:OutputFolder`.
+
+Only folders that contain `message.eml` are considered captured message folders. Set `Storage:Retention:PruneCapturedMessages` to `false` to disable automatic pruning, or increase `Storage:Retention:MaxMessages` to retain more captures.
+
 ## Console Summary
 
 For each captured email, the console logs metadata such as the received timestamp, sender, recipient count, recipients when enabled, subject, body availability, attachment names, and saved folder path. Message body content and attachment contents are not printed.
@@ -101,4 +110,4 @@ The final command starts the SMTP listener and keeps running until you stop it w
 - Message relaying is not included.
 - A web UI is not included.
 - Mailbox and user management are not included.
-- Cleanup and retention policies are manual.
+- Captured message retention is count-based. Time-based cleanup is not included.
