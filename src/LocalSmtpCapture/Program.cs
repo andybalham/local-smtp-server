@@ -41,6 +41,9 @@ public static class Program
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
             .AddEnvironmentVariables();
 
+        builder.Services.Configure<ConsoleLifetimeOptions>(
+            options => options.SuppressStatusMessages = true);
+
         builder.Services
             .AddOptions<LocalSmtpCaptureOptions>()
             .Bind(builder.Configuration)
@@ -61,6 +64,8 @@ public static class Program
         builder.Services.AddHostedService<StartupLoggingService>();
         builder.Services.AddHostedService<SmtpListenerService>();
         builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddSingleton<IStartupSummaryFormatter, StartupSummaryFormatter>();
+        builder.Services.AddSingleton<IStartupSummaryConsole, StartupSummaryConsole>();
         builder.Services.AddSingleton<IEmailSummaryFormatter, EmailSummaryFormatter>();
         builder.Services.AddSingleton<IMessageFolderNameGenerator, MessageFolderNameGenerator>();
         builder.Services.AddSingleton<ICapturedEmailRetentionPruner, CapturedEmailRetentionPruner>();

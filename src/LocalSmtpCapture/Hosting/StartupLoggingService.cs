@@ -10,26 +10,26 @@ namespace LocalSmtpCapture.Hosting;
 /// </summary>
 /// <param name="options">The configured application options.</param>
 /// <param name="logger">The startup logger.</param>
+/// <param name="applicationLifetime">The host application lifetime notifications.</param>
+/// <param name="startupSummaryFormatter">The human-readable startup summary formatter.</param>
+/// <param name="startupSummaryConsole">The console writer for the startup summary.</param>
 public sealed class StartupLoggingService(
     IOptions<LocalSmtpCaptureOptions> options,
-    ILogger<StartupLoggingService> logger)
+    ILogger<StartupLoggingService> logger,
+    IHostApplicationLifetime applicationLifetime,
+    IStartupSummaryFormatter startupSummaryFormatter,
+    IStartupSummaryConsole startupSummaryConsole)
     : IHostedService
 {
     /// <inheritdoc />
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        LocalSmtpCaptureOptions value = options.Value;
-
         logger.LogInformation("LocalSmtpCapture starting.");
-        logger.LogInformation("SMTP host: {SmtpHost}", value.Smtp.Host);
-        logger.LogInformation("SMTP port: {SmtpPort}", value.Smtp.Port);
-        logger.LogInformation("SMTP authentication enabled: {AuthenticationEnabled}", value.Smtp.Authentication.Enabled);
-        logger.LogInformation("Email output folder: {OutputFolder}", value.Storage.OutputFolder);
-        logger.LogInformation(
-            "Captured message pruning enabled: {PruneCapturedMessages}",
-            value.Storage.Retention.PruneCapturedMessages);
-        logger.LogInformation("Captured message retention limit: {MaxMessages}", value.Storage.Retention.MaxMessages);
-        logger.LogInformation("Configuration sources: appsettings.json, environment variables.");
+
+        applicationLifetime.ApplicationStarted.Register(() =>
+        {
+            startupSummaryConsole.Write(startupSummaryFormatter.Format(options.Value));
+        });
 
         return Task.CompletedTask;
     }
