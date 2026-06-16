@@ -63,6 +63,7 @@ public static class Program
         builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddSingleton<IEmailSummaryFormatter, EmailSummaryFormatter>();
         builder.Services.AddSingleton<IMessageFolderNameGenerator, MessageFolderNameGenerator>();
+        builder.Services.AddSingleton<ICapturedEmailRetentionPruner, CapturedEmailRetentionPruner>();
         builder.Services.AddSingleton<IEmailMessagePersistenceService, EmailMessagePersistenceService>();
         builder.Services.AddSingleton<IUserAuthenticator, SmtpAuthenticationValidator>();
         builder.Services.AddSingleton<IMessageStore, SmtpMessageStore>();
